@@ -18,6 +18,9 @@ def download_video():
         'format': f'bestvideo[height<={quality}]+bestaudio/best' if quality.isdigit() else quality,
         'outtmpl': os.path.join(folder, '%(title)s.%(ext)s'),
         'merge_output_format': 'mp4',
+        'http_chunk_size': 1048576,  # 1 MB chunks
+        'retries': 10,
+        'socket_timeout': 30,
     }
 
     def run_download():
