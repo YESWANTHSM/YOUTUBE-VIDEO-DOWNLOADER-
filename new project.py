@@ -1,16 +1,40 @@
-import threading
 import tkinter as tk
-from tkinter import filedialog, simpledialog, messagebox
+from tkinter import filedialog, messagebox
+import threading
 import yt_dlp
 import os
 
 def download_video():
-    url = simpledialog.askstring("Video URL", "Enter the YouTube video URL:")
-    if not url:
-        return
+    def on_submit():
+        url = url_entry.get().strip()
+        quality = quality_entry.get().strip()
+        if not url:
+            messagebox.showwarning("Missing URL", "Please enter a valid URL.")
+            return
+        if not quality:
+            quality_entry.insert(0, "best")  # Default to best
+            quality = "best"
+        dialog.destroy()
+        pick_folder_and_start_download(url, quality)
 
-    quality = simpledialog.askstring("Quality", "Enter the quality (e.g. 720p, 480p, best):")
-    folder = filedialog.askdirectory(title="Choose download folder")
+    dialog = tk.Toplevel(root)
+    dialog.title("Enter Download Info")
+    dialog.geometry("400x150")
+    dialog.resizable(False, False)
+
+    tk.Label(dialog, text="YouTube URL:").pack(pady=(10, 0))
+    url_entry = tk.Entry(dialog, width=50)
+    url_entry.pack(pady=(0, 10))
+
+    tk.Label(dialog, text="Video Quality (e.g. 720p, best):").pack()
+    quality_entry = tk.Entry(dialog, width=20)
+    quality_entry.pack(pady=(0, 10))
+
+    submit_btn = tk.Button(dialog, text="Download", command=on_submit)
+    submit_btn.pack()
+
+def pick_folder_and_start_download(url, quality):
+    folder = filedialog.askdirectory(title="Choose Download Folder")
     if not folder:
         return
 
@@ -18,7 +42,7 @@ def download_video():
         'format': f'bestvideo[height<={quality}]+bestaudio/best' if quality.isdigit() else quality,
         'outtmpl': os.path.join(folder, '%(title)s.%(ext)s'),
         'merge_output_format': 'mp4',
-        'http_chunk_size': 1048576,  # 1 MB chunks
+        'http_chunk_size': 1048576,  # 1 MB
         'retries': 10,
         'socket_timeout': 30,
     }
